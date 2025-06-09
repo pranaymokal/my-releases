@@ -1,0 +1,43 @@
+@Component
+public class JwtAuthFilter extends OncePerRequestFilter {
+
+    private final String issuer = "https://your-tenant.auth0.com/";
+    private final String audience = "your-api-audience";
+    private final JwkProvider jwkProvider = new JwkProviderBuilder(issuer).build();
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            try {
+                String token = authHeader.substring(7);
+                DecodedJWT jwt = JWT.decode(token);
+                Jwk jwk = jwkProvider.get(jwt.getKeyId());
+                Algorithm algorithm = Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey(), null);
+
+                JWTVerifier verifier = JWT.require(algorithm)
+                        .withIssuer(issuer)
+                        .withAudience(audience)
+                        .build();
+
+                verifier.verify(token);
+
+                // Optional: Populate security context (roles/claims)
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(jwt.getSubject(), null, List.of());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            } catch (Exception e) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token");
+                return;
+            }
+        } else {
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing Authorization header");
+            return;
+        }
+
+        filterChain.doFilter(request, response);
+    }
+}
