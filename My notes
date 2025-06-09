@@ -1,0 +1,14 @@
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
+    http
+        .csrf(AbstractHttpConfigurer::disable)
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers(TOKEN_GENERATION_API, CONFIGURATION_API, HEALTHCHECK_API).permitAll()
+            .anyRequest().authenticated()
+        )
+        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()));
+
+    return http.build();
+}
