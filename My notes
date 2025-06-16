@@ -1,14 +1,27 @@
-@Bean
-public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
-    http
-        .csrf(AbstractHttpConfigurer::disable)
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .authorizeHttpRequests(auth -> auth
-            .requestMatchers(TOKEN_GENERATION_API, CONFIGURATION_API, HEALTHCHECK_API).permitAll()
-            .anyRequest().authenticated()
-        )
-        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-        .cors(cors -> cors.configurationSource(corsConfigurationSource()));
+private JwtClaims validateJwtWithJose4j(String jwt) throws Exception {
+    // Fetch JWKS from the configured URL
+    HttpsJwks httpsJkws = new HttpsJwks(jwksUrl);
+    HttpsJwksVerificationKeyResolver keyResolver = new HttpsJwksVerificationKeyResolver(httpsJkws.getJsonWebKeys());
 
-    return http.build();
+    JwtConsumer jwtConsumer = new JwtConsumerBuilder()
+            .setRequireExpirationTime()
+            .setExpectedIssuer(issuer)
+            .setExpectedAudience(audience)
+            .setVerificationKeyResolver(keyResolver)
+            .build();
+
+    // Validate and process the JWT
+    return jwtConsumer.processToClaims(jwt);
+}
+
+try {
+    JwtClaims claims = validateJwtWithJose4j(jwtToken);
+    // You can extract claims as needed, e.g. claims.getSubject()
+    JwtAuthenticationToken authentication = new JwtAuthenticationToken(claims);
+    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+    SecurityContextHolder.getContext().setAuthentication(authentication);
+} catch (InvalidJwtException e) {
+    SecurityContextHolder.clearContext();
+    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token");
+    return;
 }
