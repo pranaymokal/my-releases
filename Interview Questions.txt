@@ -1,0 +1,1655 @@
+Q1. Difference between Abstract Class and Interface ?
+Answer:
+Abstract Class:
+Can have abstract and concrete methods
+Can have any type of variable (final, non-final, static, non-static)	
+Can provide partial implementation
+Can inherit (extend) only one abstract class	
+Can have constructors	
+Can have any Access Modifiers(public, protected, private)	
+Purpose is To share code among closely related classes	
+abstract class can extend abstract class, class uses extends keyword while implementing abstract class
+
+Interface: 
+All methods abstract by default (Java 8+: can have default/static)
+Only support public, static, final varibles (constant variables)
+Cannot provide implementation before java 8, since java 8 you can provide implementation in default and static methods
+Interface Can implement multiple interfaces , interface extends other interface, class uses implements while implementing interface
+Cannot have constructors
+Access Modifiers are public by default
+To define a contract for the classes
+
+
+Q2. What is functional Interface ?
+Answer: A functional interface in Java is an interface that contains exactly one abstract method. 
+While it can also include any number of default or static methods, the presence of a single abstract method is its defining characteristic. 
+This unique feature makes functional interfaces highly compatible with lambda expressions and method references, 
+which were introduced in Java 8 to facilitate functional programming paradigms. 
+The @FunctionalInterface annotation can be used to explicitly mark an interface as functional. Although not strictly mandatory, 
+this annotation is considered good practice as it helps the compiler enforce the single abstract method rule, preventing accidental additions of more abstract methods. 
+
+Q3.Can functional Interface contain default methods?
+Answer: Yes
+
+
+Q4.What is the use of Functional interface ?
+Answer:Functional interfaces in Java are interfaces with a single abstract method. 
+They are fundamental to functional programming in Java, especially when working with lambda expressions and method references. 
+They act as the target type for lambda expressions and method references, making code more concise and readable
+
+Q5.What are the predefined Functional interfaces?
+Answer: Java 8 introduced several predefined functional interfaces in the java.util.function package,
+1. Predicate<T>   : 
+A Predicate is a functional interface that represents a boolean-valued function of one argument. It is used for conditional logic, filtering, and testing.
+ Method signature : boolean test(T t);
+ Example 		  :   Predicate<Integer> isEven = (n) -> n % 2 == 0;         System.out.println(isEven.test(4)); // true
+2. Function<T, R> :
+A Function represents a function that takes an argument of type T and returns a result of type R.
+ Method signature : R apply(T t);
+ Example 		  : Function<String, Integer> stringLength = (str) -> str.length();   System.out.println(stringLength.apply("Hello")); // 5
+3. BiFunction<T, U, R>
+A BiFunction represents a function that takes two arguments of types T and U and produces a result of type R.
+ Method Signature : R apply(T t, U u);
+ Example : BiFunction<Integer, Integer, Integer> multiply = (a, b) -> a * b;  System.out.println(multiply.apply(2, 3)); // 6
+4. Consumer<T>    :
+A Consumer represents an operation that takes a single argument and returns no result.
+ Method signature : void accept(T t);
+ Example          : Consumer<String> printUpperCase = (str) -> System.out.println(str.toUpperCase());  printUpperCase.accept("hello"); // HELLO
+5. Supplier<T>    :
+A Supplier represents a function that takes no arguments and returns a result of type T.
+ Method signature : T get();
+ Example          : Supplier<String> greeting = () -> "Hello, World!";   System.out.println(greeting.get()); // Hello, World!
+6. UnaryOperator<T>
+A UnaryOperator is a special case of Function where the input and output types are the same.
+ Method signature : T apply(T t);
+ Example          : UnaryOperator<Integer> square = (n) -> n * n;   System.out.println(square.apply(5)); // 25
+7. BinaryOperator<T>
+A BinaryOperator is a special case of BiFunction where both the operands and the result are of the same type.
+ Method Signature: T apply(T t1, T t2);
+ Example         : BinaryOperator<Integer> sum = (a, b) -> a + b;  System.out.println(sum.apply(5, 3)); // 8
+8.BiPredicate<T, U> 
+A BiPredicate represents a boolean-valued function of two arguments.
+ Method Signature: boolean test(T t, U u);
+ Example         : BiPredicate<String, String> startsWith = (s1, s2) -> s1.startsWith(s2);  System.out.println(startsWith.test("Java", "Ja")); // true
+9. BiConsumer<T, U>
+A BiConsumer represents an operation that accepts two arguments and returns no result (used for side effects).
+ Method Signature: void accept(T t, U u);
+ Example         : BiConsumer<String, String> printConcatenated = (s1, s2) -> System.out.println(s1 + s2);  printConcatenated.accept("Hello", " World!"); // Hello World!
+
+Q6.What is the difference between Runnable and Callable Functional Interface ?
+Answer: The difference between Runnable and Callable lies mainly in the return type and exception handling. 
+ Both are functional interfaces used to represent tasks that can be executed concurrently, but they have different use cases in multithreading.
+ Runnable has void return type and it can not throw checked exception.it Represents a task that can be executed by a thread but does not return a result.
+ Typically used when you don’t need to return a result after the task is completed, such as when the task is just performing an action 
+ 
+ Signature: public void run()
+ Runnable task = () -> System.out.println("Task is running..."); 
+        Thread thread = new Thread(task);
+        thread.start(); // Start the thread
+
+ Callable has generic return type T, It can return any object and  Can throw checked exceptions (like IOException, SQLException).
+ Represents a task that can be executed concurrently and is expected to return a result. 
+ If the task fails, it can throw exceptions, making it suitable for tasks that might throw checked exceptions.
+		
+ Signature: T call() throws Exception;
+ 
+		Callable<Integer> task = () -> {
+					return 42;
+				};
+		ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Future<Integer> future = executorService.submit(task);
+        System.out.println("Result from Callable: " + future.get()); // 42
+        executor.shutdown();
+
+
+Q7.Does main thread will wait for the response of the call method ?
+Answer: In the context of an ExecutorService, the result of a Callable is returned via a Future object.
+The Future provides a get() method that blocks the calling thread  until the Callable task has completed and the result is available.
+So, the main thread will wait for the response of the call() method if you call future.get() on the Future object returned by the ExecutorService.submit() method.
+
+import java.util.concurrent.*;
+
+ ExecutorService executorService= Executors.newFixedThreadPool(2);
+        Runnable runnable= () ->{System.out.println("Thread is Running");};
+        executorService.execute(runnable);
+       // executorService.shutdown();
+        Runnable runnable2= () ->{System.out.println("Thread is Running");};
+        executorService.execute(runnable2);
+        executorService.shutdownNow();
+        // Note: The shutdown method will not stop the currently running tasks, it will prevent new tasks from being submitted to the executor service.
+        // If you want to stop the currently running tasks, you would need to use a different approach, such as using a flag to interrupt the threads or
+        // using the shutdownNow method, which attempts to stop all actively executing tasks and halts the processing of waiting tasks.
+        // However, using shutdownNow is not always safe as it may interrupt tasks that are in the middle of execution, potentially leaving shared resources in an inconsistent state.
+        // It's generally recommended to allow tasks to complete gracefully unless you have a specific reason to forcefully stop them.
+        // Note: The execute method does not return a value, it simply submits the Runnable task for execution.
+        // If you need to get a result from the task, you would typically use a Callable instead of a Runnable, and submit it using the submit method of ExecutorService.
+
+public abstract void shutdown()
+Initiates an orderly shutdown in which previously submitted tasks are executed, but no new tasks will be accepted.
+ Invocation has no additional effect if already shut down.
+public abstract java.util.List<Runnable> shutdownNow()
+Attempts to stop all actively executing tasks, halts the processing of waiting tasks, and returns a list of the tasks that were awaiting execution.
+
+public class CallableExecutorService {
+    public static void main(String[] args) {
+        ExecutorService executorService= Executors.newFixedThreadPool(2);
+        Callable<Integer> callable = () -> {
+            System.out.println("Thread is Running");
+            return 42; // Example return value
+        };
+        Future<Integer> future =executorService.submit(callable);
+        try    {
+            Integer result = future.get(); // This will block until the callable completes
+            System.out.println("Result from callable: " + result);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            executorService.shutdown(); // Always shut down the executor service
+        }
+        // Note: The submit method returns a Future object, which can be used to retrieve the result of the callable once it completes.
+        // The Future.get() method blocks until the callable completes and returns the result.
+        // If the callable throws an exception, it will be wrapped in an ExecutionException when calling Future.get().
+        // It's important to always shut down the executor service to release resources, either by calling shutdown() or shutdownNow().
+        // The shutdown method allows previously submitted tasks to execute before terminating, while shutdownNow attempts to stop all actively executing tasks and halts the processing of waiting tasks.
+    }
+}
+
+Q8.Internal working of hash map ?
+Answer:HashMap contains an array of Node objects. Each node represents a key-value mapping. 
+This process is defined below:
+class Node {
+  int hash;
+  K key;
+  V value;
+  Node next;
+}
+Each node stores,
+hash: the hash code of the key
+key: the key object
+value: the associated value
+next: reference to the next node in case of a collision
+
+Hashing is the process of converting an object into an integer by using the hashCode() method.
+It's necessary to write the hashCode() method properly for better performance of the HashMap. 
+HashMap uses the hashCode() method to determine the bucket location for a key. hashCode() method of the object class returns the memory reference of an object in integer form.
+HashMap uses equals() to compare the key to whether they are equal or not. If the equals() method return true, they are equal otherwise not equal. 
+A HashMap is an array of “buckets.” Each bucket can hold one or more key-value pairs
+It is used to store nodes. Two or more nodes can have the same bucket. In that case, a link list structure is used to connect the nodes.
+capacity = number of buckets * load factor.
+index = hashCode(key) & (n-1).
+index = hashCode("ABC") = 64578  & n - 1 = 16 - 1 = 15  = 1111 1100 1110 0010 & 0000 0000 1111   = 0010  =2 
+
+Internal Working of put() Method in HashMap
+Calculate hash code of Key {"pranay"}. It will be generated as 118.
+Calculate index by using index method it will be 6.
+Create a node object as: 
+{
+  int hash = 118
+  Key key = { "pranay" }
+  Integer value = 20
+  Node next = null
+}
+Place this object at index 6, if no other object is presented there.
+put operation
+Calculate hashCode of Key {"sachin"}. It will be generated as 115.
+Calculate index by using index method it will be 3.
+Create a node object as: 
+{
+  int hash = 115
+  Key key = { "sachin" }
+  Integer value = 22
+  Node next = null
+}
+Place this object at index 3, if no other object is presented there.
+Calculate hash code of Key {"vaibhav"}. It will be generated as 118.
+Calculate index by using index method it will be 6.
+Create a node object as:
+ {
+  int hash = 118
+  Key key = {"vaibhav"}
+  Integer value = 40
+  Node next = null
+}
+Place this object at index 6 if no other object is presented there. 
+In this case, a node object is found at index 6 - this is a case of collision. 
+In that case, check via the hashCode() and equals() method if both the keys are the same. 
+If keys are the same, replace the value with the current value. Otherwise, connect this node object to the previous node object via linked list and both are stored at index 6. 
+Internal Working of get() Method:
+get(K key) method is used to get a value by its key
+
+Calculate hash code of Key {"sachin"}. It will be generated as 115.
+Calculate index by using index method it will be 3.
+Go to index 3 of the array and compare the first element's key with the given key. If both are equals then return the value, otherwise, check for the next element if it exists.
+In our case, it is found as the first element and the returned value is 30.
+
+Calculate hash code of Key {"vaibhav"}. It will be generated as 118.
+Calculate index by using index method it will be 6.
+Go to index 6 of the array and compare the first element's key with the given key. If both are equals then return the value, otherwise, check for the next element if it exists.
+In our case, it is not found as the first element and the next node object is not null.
+If the next node is null then return null.
+If the next of node is not null traverse to the second element and repeat process 3 until the key is not found or next is not null.
+
+
+
+Q9. Hash map default capacity and load factor?
+Answer:  capacity 16 , and load factor 0.75  
+
+Q10.Sort employees by salary and name using stream API  ?
+Answer:
+
+Employee
+Double salary;
+
+
+import java.util.List;
+import java.util.Comparator;
+import java.util.stream.Collectors;
+
+List<Employee> sortedEmployees = employees.stream().sorted(
+								 Comparator.comparingDouble(Employee::getSalary)
+								.thenComparing(Employee::getName))
+								.collect(Collectors.toList());
+
+If you want descending order for salary, use .reversed():
+								employees.stream().sorted(
+								Comparator.comparingDouble(Employee::getSalary)
+								.reversed()
+								.thenComparing(Employee::getName));
+
+Employee
+BigDecimal salary;
+
+List<Employee> sortedEmployees = employees.stream().sorted(
+								 Comparator.comparing(Employee::getSalary)
+								.thenComparing(Employee::getName))
+								.collect(Collectors.toList());
+
+If you want descending order for salary, use .reversed():
+								employees.stream().sorted(
+								Comparator.comparing(Employee::getSalary)
+								.reversed()
+								.thenComparing(Employee::getName));
+
+Q11. First non-repetitive character in String 
+
+public static Character firstNonRepeated(String str) {
+        Map<Character, Integer> countMap = new LinkedHashMap<>();
+		for (char c : str.toCharArray()) {
+            countMap.put(c, countMap.getOrDefault(c, 0) + 1);
+        }
+       
+
+	   for (Map.Entry<Character, Integer> entry : countMap.entrySet()) {
+            if (entry.getValue() == 1) {
+                return entry.getKey();
+            }
+        }
+        return new RuntimeException("No character found "); // or throw exception if no such character
+		
+		
+		or 
+		
+		 return countMap.entrySet().stream()
+            .filter(entry -> entry.getValue() == 1)
+            .map(Map.Entry::getKey)
+            .findFirst()
+            .orElseThrow(()-> new RuntimeException("No character found "));
+}
+
+
+Q12.what will be output of following code : 
+
+String s = "abc";
+
+String p = "abc";
+
+String r = new String("abc");
+
+s==p
+
+s==r
+
+s.equals(p)
+
+s.equals(r)
+
+1. s == p
+Both s and p are string literals "abc".
+String literals are interned by the Java compiler, so s and p reference the same object in the String pool.
+Therefore, s == p evaluates to true.
+
+2. s == r
+r is created with new String("abc") — this creates a new String object in heap, not interned.
+So, s (from the string pool) and r (new object) reference different objects.
+Therefore, s == r evaluates to false.
+
+3. s.equals(p)
+.equals() compares the actual content of the strings.
+s and p both have content "abc".
+So, s.equals(p) evaluates to true.
+
+4. s.equals(r)
+Same as above, .equals() compares content.
+r also contains "abc".
+So, s.equals(r) evaluates to true.
+
+
+Q.13 Write SQL query for No of employees working in each department, location
+Answer: 
+Employee ->employee_id, employee_name, salary, department_id
+
+Department-> deparment_id, department_name, location
+
+> select count(e.employee_id), d.department_name,d.location 
+from department d 
+left join employee e 
+on d.department_id=e.department_id 
+group by d.department_name, d.location    
+
+
+Q2)Top 5 highest paid employees from each department
+
+SELECT 
+    e1.employee_id,
+    e1.employee_name,
+    e1.salary,
+    e1.department_id,
+    d.department_name
+FROM 
+    Employee e1
+JOIN 
+    Department d ON 
+	e1.department_id = d.department_id
+WHERE 
+    5 > (
+        SELECT COUNT(*)
+        FROM Employee e2
+        WHERE e2.department_id = e1.department_id
+          AND e2.salary > e1.salary
+    )
+ORDER BY
+    e1.department_id,
+    e1.salary DESC;
+	
+For the current employee row e1, the subquery counts how many employees (e2) are in the same department (e2.department_id = e1.department_id) and 
+have a salary greater than e1's salary (e2.salary > e1.salary). 
+The condition 5 > COUNT(*) means: keep employees for which the count of employees in the same department who earn more than them is less than 5.
+	
+The one with the highest salary will have zero employees earning more than them → count = 0 < 5 → included.
+Second highest will have 1 employee earning more → count = 1 < 5 → included.
+... up to the fifth highest (count = 4), included.
+The sixth highest will have 5 employees earning more → count = 5, 5 > 5 is false, so excluded.
+
+Orders results by department ID and descending salary in each department for readability.
+First, the results are sorted by department_id to group all employees from the same department together.
+Then, within each department, employees are sorted by salary in descending order (highest salary first).
+
+
+CREATE TABLE Department (
+    department_id INT PRIMARY KEY,
+    department_name VARCHAR(100) NOT NULL,
+    location VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE Employee (
+    employee_id INT PRIMARY KEY,
+    employee_name VARCHAR(100) NOT NULL,
+    salary DECIMAL(10, 2) NOT NULL,
+    department_id INT,
+    FOREIGN KEY (department_id) REFERENCES Department(department_id)
+);
+
+INSERT INTO Employee (employee_id, employee_name, salary, department_id) VALUES
+(101, 'John Doe', 75000.00, 2),
+(102, 'Jane Smith', 80000.00, 2),
+(103, 'Emily Davis', 60000.00, 1),
+(104, 'Michael Brown', 65000.00, 1),
+(105, 'Jessica Wilson', 72000.00, 3),
+(106, 'David Lee', 55000.00, 4),
+(107, 'Chris Taylor', 70000.00, 3),
+(108, 'Anna Harris', 85000.00, 2),
+(109, 'James Martin', 62000.00, 1),
+(110, 'Patricia Moore', 68000.00, 3);
+(201, 'John Smith', 65000.00, 2),
+(202, 'Jane Davis', 50000.00, 2),
+(203, 'Emily Brown', 80000.00, 1),
+(204, 'Michael Wilson', 95000.00, 1),
+(205, 'Jessica Lee', 82000.00, 3),
+(206, 'David Taylor', 95000.00, 4),
+(207, 'Chris Harris', 50000.00, 3),
+(208, 'Anna Martin', 65000.00, 2),
+(209, 'James Martin', 72000.00, 1),
+(210, 'Patricia Dee', 58000.00, 3);
+	
+Different types of joins
+
+1. INNER JOIN
+Returns only rows with matching values in both tables.
+
+SELECT e.employee_id, e.employee_name, d.department_name
+FROM Employee e
+INNER JOIN Department d ON e.department_id = d.department_id;
+
+2. LEFT JOIN (or LEFT OUTER JOIN)
+Returns all rows from the left table, plus matched rows from the right table. Unmatched rows from the right table are shown as NULL.
+
+SELECT e.employee_id, e.employee_name, d.department_name
+FROM Employee e
+LEFT JOIN Department d ON e.department_id = d.department_id;
+
+3. RIGHT JOIN (or RIGHT OUTER JOIN)
+Returns all rows from the right table, plus matched rows from the left table. Unmatched rows from the left table show as NULL.
+
+SELECT e.employee_id, e.employee_name, d.department_name
+FROM Employee e
+RIGHT JOIN Department d ON e.department_id = d.department_id;
+
+4. FULL JOIN (or FULL OUTER JOIN)
+Returns all rows from both tables. Unmatched rows from either table will have NULLs for missing columns from the other table.
+
+SELECT e.employee_id, e.employee_name, d.department_name
+FROM Employee e
+FULL JOIN Department d ON e.department_id = d.department_id;
+
+5. CROSS JOIN
+Returns a Cartesian product of two tables (every row of the first table joined to every row of the second table).
+
+SELECT e.employee_id, d.department_name
+FROM Employee e
+CROSS JOIN Department d;
+
+If Employee has 10 rows and Department has 4, result will be 40 rows (10×4). Use with care!
+
+6. SELF JOIN
+Joins a table to itself. Useful for hierarchical data (e.g., employees and managers in the same table).
+SELECT e1.employee_name AS Employee, e2.employee_name AS Manager
+FROM Employee e1
+LEFT JOIN Employee e2 ON e1.manager_id = e2.employee_id;
+
+7.Use of self join ?
+
+Hierarchical Data (e.g., Employee-Manager Relationships)
+When an employee's record contains a reference to their manager (who is also an employee in the same table), you can use a self join to retrieve employee-manager pairs.
+
+Example:
+
+SELECT e.employee_name, m.employee_name AS manager_name
+FROM Employee e
+LEFT JOIN Employee m ON e.manager_id = m.employee_id;
+This lists employees with their respective managers.
+
+Finding Related Rows Within the Same Table
+For example, finding customers in the same city or country but with different customer IDs (useful for grouping or comparisons).
+
+Example:
+
+SELECT c1.customer_name, c2.customer_name, c1.city
+FROM Customers c1
+JOIN Customers c2 ON c1.city = c2.city AND c1.customer_id <> c2.customer_id;
+
+Detecting Duplicates or Near-Duplicates
+By joining the table with itself, you can find rows with duplicate or closely matching values.
+
+Use of Indexing and partitioning?
+Indexing is a powerful technique to optimize data retrieval. It helps databases find and access records faster,
+ much like a book’s index points to exact topics or chapters, rather than scanning from page one each time. 
+ Without indexes, databases would have to scan every row to find matches, taking much longer, especially as your tables grow large.
+ Indexes reduce disk I/O and improve performance for queries, sorting
+ 
+When an index is created on a column/columns in a database table, the database builds a separate, sorted data structure based on the values in those columns.
+This index then stores the indexed values along with pointers to the actual location of the data in the main table.
+When a query needs to access data based on the indexed columns, the database can use this sorted index to quickly locate the relevant records instead of scanning the entire table.
+ 
+Increased storage space: Indexes require additional storage space to store the indexed values and pointers.
+Slower data modification: Whenever data in an indexed table is inserted, updated, or deleted, the index also needs to be updated, which can slow down these write operations. 
+
+Clustered index:
+A clustered index in a database determines the physical order in which data is stored on disk
+in this type of index data rows are physically stored in the order of the index key.
+Because the data can only be stored in one physical order, a table can have only one clustered index. 
+for example employee sorted by salary and name and index applied on salary and name but in single physical order.
+ 
+Clustered index is automatically created during table creation
+ 
+ 
+CREATE TABLE Student (
+    Roll_No INT PRIMARY KEY,
+    Name VARCHAR(50)
+);
+ 
+Non-Clustered index: 
+A non-clustered index is a database index that does not change the physical order of data within the table.  
+Instead, it creates a separate data structure, A non-clustered index is a separate structure from the data table, storing a copy of indexed columns and pointers to data rows.
+Multiple non-clustered indexes can exist per table and they do not affect the data's physical order. They are faster for retrieving small data subsets.
+Useful for optimizing lookups on columns other than the primary key or clustered index key
+
+CREATE INDEX idx_lastname
+ON Persons (LastName);
+
+CREATE UNIQUE INDEX idx_employeeid
+ON Employees (EmployeeID);
+
+Composite index 
+CREATE INDEX idx_name
+ON users (first_name, last_name);
+ 
+Benefits of Indexing
+Fast Query Performance: Significantly speeds up SELECT queries and WHERE clause data lookups.
+Efficient Sorting: Speed up ORDER BY operations on indexed columns.
+It is often automatically created on the primary key of a table.
+
+Index frequently queried columns: Focus on columns used in WHERE clauses, JOIN conditions, and ORDER BY clauses.
+Avoid over-indexing: Too many indexes can slow down data modification operations (inserts, updates, deletes) and consume extra storage space.
+Monitor index usage: Regularly check which indexes are actively being used and remove or modify those that are not effectively improving performance.
+Consider composite indexes for multi-column queries: If your queries frequently involve conditions on multiple columns, a composite index can be more efficient than multiple single-column indexes.
+
+materialized view vs view ?
+The primary distinction between a view and a materialized view in a database system lies in how they handle data storage and refresh mechanisms.
+View:
+A view is a virtual table that does not store data physically on disk.
+It is essentially a stored query; when a view is queried, the underlying query is executed against the base tables, and the results are returned dynamically.
+Views always reflect the latest data in the base tables because they are re-evaluated with each access.
+They primarily serve for data abstraction, simplification of complex queries, and security (by restricting access to specific columns or rows).
+
+Materialized View:
+A materialized view is a physical copy of the query's result set, stored on disk like a regular table.
+It acts as a snapshot of the data at a specific point in time when it was last refreshed.
+Materialized views are designed to improve query performance, especially for complex or frequently accessed queries, by pre-computing and storing the results.
+They do not automatically reflect changes in the base tables; they require explicit refresh operations (manual or scheduled) to update the stored data.
+This storage and refresh mechanism can lead to increased storage costs and the potential for stale data if not refreshed regularly.
+
+
+Questions asked in 2nd round:
+
+Give a brief about your recent project and your roles and responsibilities in it
+
+How Spring boot application starts ? 
+
+Main Class with @SpringBootApplication
+Your Spring Boot app starts from a main method, typically like this:
+
+@SpringBootApplication
+public class MyApp {
+    public static void main(String[] args) {
+        SpringApplication.run(MyApp.class, args);
+    }
+}
+@SpringBootApplication is a convenience annotation that combines:
+@Configuration: marks the class as a source of bean definitions.
+
+@EnableAutoConfiguration: enables Spring Boot’s auto-configuration mechanism.
+
+@ComponentScan: enables component scanning to find other components, configurations, and services.
+
+a.Creates SpringApplication instance
+SpringApplication app = new SpringApplication(MyApp.class);
+Determines if it’s a web application (Servlet or Reactive).
+Sets up default settings like banner, environment, listeners, etc.
+
+b. Prepare the Environment
+Reads system properties, environment variables, application.properties/yaml files.
+Creates a ConfigurableEnvironment.
+
+c. Set up ApplicationContext
+Chooses appropriate ApplicationContext type:
+AnnotationConfigServletWebServerApplicationContext for web apps.
+AnnotationConfigApplicationContext for non-web apps.
+Registers listeners and initializers.
+
+
+d.Perform Auto-Configuration
+Uses @EnableAutoConfiguration, which triggers:
+spring.factories to load many @Configuration classes.
+Conditional annotations like @ConditionalOnClass, @ConditionalOnMissingBean to determine what beans to load.
+
+If spring-boot-starter-web is on the classpath, it auto-configures:
+DispatcherServlet, Tomcat, Jackson, MessageConverters, etc.
+
+Component Scanning & Bean Creation
+@ComponentScan scans packages for:
+@Component, @Service, @Repository, @Controller, @RestController
+Beans are created and managed by the Spring container.
+
+f. Start Embedded Server (if Web App)
+Embedded server (e.g., Tomcat, Jetty, or Undertow) is auto-configured and started.
+Spring sets up the dispatcher servlet and maps it to /.
+
+d.Call CommandLineRunner or ApplicationRunner Beans
+If any beans implement these interfaces, their run() methods are called just before the app is fully up.
+@Bean
+public CommandLineRunner runner() {
+    return args -> {
+        System.out.println("App is running with args: " + Arrays.toString(args));
+    };
+}
+
+main() →
+  SpringApplication.run() →
+    Create Environment →
+    Set up ApplicationContext →
+    Load Properties & Beans →
+    Run Auto-Configuration →
+    Start Web Server →
+    Run CommandLineRunner/ApplicationRunner →
+    Application Ready!
+
+Use of @configuration annotation
+
+If I want to create a bean after few other beans, how to do it
+
+-> To ensure a Spring bean is created after other specific beans, the primary mechanism is the @DependsOn annotation.
+Using @DependsOn:
+Identify Dependent Beans: Determine which beans must be initialized before the target bean.
+Apply @DependsOn: On the class or @Bean method of the target bean, add the @DependsOn annotation and specify the names of the prerequisite beans as a string array.
+
+    @Bean
+    public BeanA beanA() {
+        System.out.println("BeanA initialized");
+        return new BeanA();
+    }
+
+    @Bean
+    public BeanB beanB() {
+        System.out.println("BeanB initialized");
+        return new BeanB();
+    }
+
+    @Bean
+    @DependsOn({"beanA", "beanB"}) // This bean depends on beanA and beanB
+    public BeanC beanC() {
+        System.out.println("BeanC initialized after BeanA and BeanB");
+        return new BeanC();
+    }
+
+If I have a xml based configuration and I have to use it in spring boot project, how to use it
+To use an XML-based configuration in a Spring Boot project, the @ImportResource annotation is utilized. 
+This annotation allows Spring Boot to incorporate the bean definitions and configurations specified within the XML file
+ into the application's Spring context.Store your XML configuration file 
+ (e.g., applicationContext.xml or beans.xml) within the src/main/resources directory of your Spring Boot project.
+	This ensures it's available on the classpath.
+Use the @ImportResource annotation on your main Spring Boot application class 
+(the one annotated with @SpringBootApplication) or a dedicated @Configuration class.
+
+    @ImportResource("classpath:beans.xml") // Specify the path to your XML file
+    @SpringBootApplication
+    public class MySpringBootApplication {
+|
+	
+	<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="myService" class="com.example.MyService">
+        <property name="message" value="Hello from XML configuration!"/>
+    </bean>
+
+</beans>
+	
+How to add spring security in a project
+Implementing Spring Security in a Spring Boot application involves several key steps:
+Add Dependencies: Include the spring-boot-starter-security dependency in your pom.xml (for Maven) or build.gradle (for Gradle).
+
+Configure Security: Create a configuration class annotated with @Configuration and @EnableWebSecurity. 
+This class extends WebSecurityConfigurerAdapter (for older versions) or provides a SecurityFilterChain bean 
+
+    @Configuration
+    @EnableWebSecurity
+    public class SecurityConfig {
+
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+            http
+                .authorizeHttpRequests(authorize -> authorize
+                    .requestMatchers("/public/**").permitAll() // Allow public access
+                    .anyRequest().authenticated() // Require authentication for all other requests
+                )
+                .formLogin(Customizer.withDefaults()) // Enable form-based login
+                .httpBasic(Customizer.withDefaults()); // Enable HTTP Basic authentication
+
+            return http.build();
+        }
+Configure Authentication:
+Define how users are authenticated. This can be in-memory authentication, 
+JDBC-based authentication, or custom UserDetailsService implementations for integrating with other identity providers.
+Secure Endpoints:
+Use authorizeHttpRequests() within your SecurityFilterChain configuration to define access rules for different URL patterns based on roles or authentication status. 
+For method-level security, use @EnableMethodSecurity and annotations like @PreAuthorize or @PostAuthorize.
+Password Encoding:
+Implement a strong password encoder like BCryptPasswordEncoder to securely store user passwords.
+Handle Login/Logout:
+Spring Security provides default login and logout functionalities, which can be customized as needed.
+
+
+The core difference between @PreAuthorize and @PostAuthorize in Spring Security lies in when their respective security expressions are evaluated relative to the method execution.
+@PreAuthorize:
+Evaluation Time: The security expression is evaluated before the method is executed.
+Purpose: It acts as a gatekeeper, ensuring that the calling principal (user) meets the specified authorization criteria before any method logic is performed. This is ideal for preventing unauthorized access to sensitive operations.
+Access to Data: The expression can access method parameters and the authentication object.
+@PostAuthorize:
+Evaluation Time: The security expression is evaluated after the method has successfully executed. 
+Purpose: It is used to perform authorization checks based on the return value of the method, or to filter or modify the returned data. This is useful when access control depends on the data being retrieved or processed by the method.
+Access to Data: The expression has access to the method's parameters, the authentication object, and crucially, the returnObject (the value returned by the method).
+
+The @Secured annotation is used to specify a list of roles on a method. So, a user only can access that method if she has at least one of the specified roles.
+In this case, the configuration states that if a user has either ROLE_VIEWER or ROLE_EDITOR, that user can invoke the isValidUsername method.
+The @Secured annotation doesn’t support Spring Expression Language (SpEL).
+@Secured({ "ROLE_VIEWER", "ROLE_EDITOR" })
+public boolean isValidUsername(String username) {
+    return userRoleRepository.isValidUsername(username);
+}
+
+
+Benefits of JPA over JDBC
+The Java Persistence API (JPA) offers several benefits over directly using JDBC for database interactions in Java applications:
+Higher Level of Abstraction (Object-Relational Mapping - ORM):
+JPA allows developers to work with Java objects and classes, mapping them directly to database tables and columns. This eliminates the need to write boilerplate SQL code for basic CRUD (Create, Retrieve, Update, Delete) operations, as JPA handles the translation between objects and relational data. JDBC, in contrast, requires explicit SQL query construction and result set processing.
+Reduced Boilerplate Code:
+JPA significantly reduces the amount of repetitive code required for database interactions. Tasks like connection management, statement creation, result set handling, and resource closing are abstracted away by the JPA provider, leading to cleaner and more concise code.
+Database Independence:
+JPA provides a database-independent API. Applications written with JPA can be easily migrated between different relational databases (e.g., MySQL, PostgreSQL, Oracle) with minimal or no code changes, as long as a compatible JPA provider is available for the target database. JDBC often requires database-specific SQL syntax and driver management.
+Caching and Performance Optimization:
+JPA implementations often include built-in caching mechanisms (first-level and second-level caches) that can significantly improve application performance by reducing the number of database round trips. Features like lazy loading also help optimize data retrieval. JDBC does not inherently provide such caching capabilities.
+Simplified Transaction Management:
+JPA integrates well with transaction management frameworks, simplifying the handling of database transactions. It provides mechanisms for defining and managing transactions, ensuring data integrity.
+Query Language (JPQL/Criteria API):
+JPA introduces JPQL (Java Persistence Query Language) and the Criteria API, which allow developers to write database queries using an object-oriented syntax, rather than raw SQL. This improves code readability and maintainability. While native SQL can still be used when necessary, JPQL and the Criteria API offer a more integrated approach within the object model.
+Optimistic Locking:
+JPA provides built-in support for optimistic locking, a mechanism to prevent concurrent updates to the same data by multiple users, ensuring data consistency without requiring explicit database locks.
+
+
+Which build tool was used in previous project
+
+Use of Maven and pom.xml
+
+What is transitive dependency
+In Maven, a transitive dependency refers to a dependency that your project's direct dependency relies on. 
+Direct Dependency: These are the libraries or JAR files you explicitly declare in your project's pom.xml file within the <dependencies> section.
+Transitive Dependency: When you add a direct dependency, Maven automatically downloads and includes any 
+libraries that the direct dependency itself needs to function, according to its own pom.xml file. 
+Imagine Project A depends on Library B. Library B, in turn, needs Library C to function. In this scenario:
+Library B is a direct dependency of Project A.
+Library C is a transitive dependency of Project A (because it's a dependency of Library B, which Project A needs). 
+Simplicity: It simplifies dependency management, as you don't need to manually list every single library your project ultimately relies on.
+Completeness: It ensures your project has all the necessary components to compile and run correctly, even if they're hidden several layers deep in the dependency chain. 
+
+
+if 2 dependency are there and both need common 3rd dependency of different version, and if I want a dependency of particular version so how to do it
+dependencies {
+    implementation('com.example:dependency-A:1.0') {
+        exclude group: 'com.common', module: 'common-lib'
+    }
+    implementation('com.example:dependency-B:2.0') {
+        exclude group: 'com.common', module: 'common-lib'
+    }
+    implementation 'com.common:common-lib:3.0.0' // Desired version
+}
+
+
+What is plugin in maven
+In Apache Maven, a plugin is a fundamental component that extends Maven's core functionality and 
+enables the execution of specific tasks within the build lifecycle. 
+Plugins are essentially reusable pieces of code that encapsulate common build logic, 
+allowing for consistent and efficient project management across various projects.
+
+Plugins add specific capabilities to Maven's build process beyond its basic project management features. This includes tasks like 
+compiling source code, running tests, packaging artifacts (JAR, WAR, EAR), generating documentation, deploying to remote repositories, and more.
+Use of Asynchronous
+
+ 
+Q1> Explain new features introduced in Java 8?
+1.  Default and Static Methods in Interface
+2.  lambda expressions
+3.  Method reference can be used as a shorter and more readable alternative for a lambda expression that only calls an existing method. 
+     There are four variants of method references.
+	1.Reference to a Static Method
+	The reference to a static method holds the syntax ContainingClass::methodName
+	boolean isReal = list.stream().anyMatch(u -> User.isRealUser(u));   -> boolean isReal = list.stream().anyMatch(User::isRealUser);
+	2.Reference to an Instance Method
+	The reference to an instance method holds the syntax containingInstance::methodName
+	User user = new User();
+	boolean isLegalName = list.stream().anyMatch(user::isLegalName);
+	3.Reference to an Instance Method of an Object of a Particular Type
+	This reference method takes the syntax ContainingType::methodName.
+    long count = list.stream().filter(String::isEmpty).count();
+	4.Reference to a Constructor
+	A reference to a constructor takes the syntax ClassName::new.
+    Stream<User> stream = list.stream().map(User::new);
+4. Optional<T>
+ It works as a container for the object of type T. It can return a value of this object if this value is not a null. 
+ When the value inside this container is null, it allows doing some predefined actions instead of throwing NPE.
+
+Optional<String> optional = Optional.empty();
+String str = "value";
+Optional<String> optional = Optional.of(str);
+Optional<String> optional = Optional.ofNullable(getString());
+
+
+User user = getUser();
+if (user != null) {
+    Address address = user.getAddress();
+    if (address != null) {
+        String street = address.getStreet();
+        if (street != null) {
+            return street;
+        }
+    }
+}
+
+This can be simplified with Optional:
+
+Optional<User> user = Optional.ofNullable(getUser());
+String result = user
+  .map(User::getAddress)
+  .map(Address::getStreet)
+  .orElse("not specified");
+
+Q2->Given a sorted arraay,
+int[] sortedArray ={1,2,3,5,7,9,15,21}
+List out all pair of elements from above array whose sum is equal to 10?
+
+public class PairSum {
+    public static void main(String[] args) {
+        int[] arr = {1, 2, 3, 5, 7, 9, 15, 21};
+        int target = 10;
+
+        System.out.println("Pairs with sum = " + target + ":");
+        for (int i = 0; i < arr.length; i++) {
+            for (int j = i + 1; j < arr.length; j++) {
+                if (arr[i] + arr[j] == target) {
+                    System.out.println("(" + arr[i] + ", " + arr[j] + ")");
+                }
+            }
+        }
+    }
+}
+
+public class PairSumHashSet {
+    public static void main(String[] args) {
+        int[] arr = {1, 2, 3, 5, 7, 9, 15, 21};
+        int target = 10;
+        HashSet<Integer> seen = new HashSet<>();
+
+        System.out.println("Pairs with sum = " + target + ":");
+        for (int num : arr) {
+            int complement = target - num;
+            if (seen.contains(complement)) {
+                System.out.println("(" + complement + ", " + num + ")");
+            }
+            seen.add(num);
+        }
+    }
+}
+
+Q3>Given Below Entity  Employee class
+public class Employee{
+private String name;
+private String dept;
+private String hod;
+private Long salary;
+}
+
+Explain how above entity class can be made more productive ?
+Q4> Explain stream operator in java?
+In Java, the "Stream operator" refers to the various methods available within the Java Stream API, introduced in Java 8. These methods enable functional-style operations on sequences of elements, allowing for declarative and efficient data processing.
+Stream operations are categorized into two main types:
+Intermediate Operations:
+These operations transform a stream into another stream. They are lazy, meaning they do not execute immediately but rather build a pipeline of operations. Execution only occurs when a terminal operation is invoked. Examples include:
+filter(): Selects elements based on a given predicate.
+map(): Transforms each element using a function.
+flatMap(): Flattens nested structures into a single stream.
+distinct(): Removes duplicate elements.
+sorted(): Sorts elements.
+limit(): Restricts the stream to a specified number of elements.
+skip(): Skips a specified number of elements.
+peek(): Performs an action on each element for debugging or side effects without modifying the stream.
+
+Terminal Operations:
+These operations produce a result or a side effect and mark the end of a stream pipeline. Once a terminal operation is performed, the stream is considered consumed and cannot be reused. Examples include: 
+forEach(): Performs an action for each element.
+collect(): Gathers elements into a collection (e.g., List, Set, Map).
+reduce(): Aggregates elements into a single result.
+count(): Returns the number of elements in the stream.
+min(), max(), average(): Calculate minimum, maximum, or average for numerical streams.
+anyMatch(), allMatch(), noneMatch(): Check if elements match a given predicate.
+findFirst(), findAny(): Find an element in the stream.
+toArray(): Converts stream elements into an array.
+
+Stream operations are chained together to form a pipeline. 
+Data flows through this pipeline, undergoing transformations and filtering at each intermediate step until a terminal operation triggers the actual processing and produces a final result.
+ This functional approach promotes cleaner, 
+more concise code and enables optimizations like parallel processing.
+
+Q6>Given list of employess,using stream operator find depts which has atleast 3 employees with them?
+
+        Map<String, Long> departmentEmployeeCounts = employees.stream()
+                .collect(Collectors.groupingBy(Employee::getDepartment, Collectors.counting()));
+
+       List<String> departmentsWithAtLeastThreeEmployees = departmentEmployeeCounts.entrySet().stream()
+                .filter(entry -> entry.getValue() >= 3)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+
+Q7>Given below class 
+
+@Component
+public class MyComp1{
+
+@Value("xyz.abc")
+private String val;
+
+public void MyComp1(){
+
+val="Value setted inside Constructor";
+System.out.println("value of variable val in constructor is : " +val);
+}
+
+@PostConstruct
+public void run(){
+   val= "Value set in method run which has PostConstruct annotation";
+
+System.out.println("value of variable val  In method with postconstruct annotation is : " +val);
+  }
+}
+
+@Component
+class MyComp2(){
+
+@Autowired
+private MyComp1 myComp1;
+
+public void run(){
+System.out.println("value of variable val in MyComp2.run() is : " +val);
+}
+
+
+}
+What will get printed if somehow we are invoking MyComp2.run()????
+
+-> value of variable val  In method with postconstruct annotation is : Value set in method run which has PostConstruct annotation
+this is due to order 1. constructor 2. injection 3. @postConstruct so @postConstruct will override injected value
+
+
+Q8> Suppose there are 2 tables namely Customer (Columns-custId,date)and Order(Columns-orderId,customerName,orderid,amount)
+
+Write a Sql query which will print lisg of customers amd their total amount spent ?
+
+select c.customerName,sum(o.amount) as total_amount_spent from customers c join Orders o on c.customerId = o.orderId GROUP BY 
+c.customerName;
+
+SELECT customerName, SUM(amount) AS total_amount_spent
+FROM 
+    Order
+GROUP BY 
+    customerName
+	
+	SELECT 
+    o.customerName,
+    SUM(o.amount) AS total_amount_spent
+FROM 
+    Customer c
+JOIN 
+    Order o ON c.customerId = o.customerId
+GROUP BY 
+    o.customerName;
+	
+
+1. Find the second highest salary from the Employee table.
+select max(salary) as second_highest from employee where salary< (select max(salary) from employee)
+
+2.List the same salaries in employee table .
+select salary from employee group by salary having count(*) > 1  
+
+3. select employees with same salaries?
+
+SELECT e.empId, e.name, e.salary
+FROM Employee e
+WHERE e.salary IN (
+    SELECT salary
+    FROM Employee
+    GROUP BY salary
+    HAVING COUNT(*) > 1
+);
+
+8. List employees who earn more than their manager.
+
+SELECT e.empId, e.name
+FROM Employee e
+JOIN Employee m ON e.managerId = m.empId
+WHERE e.salary > m.salary;
+
+
+9. Find duplicate emails in a User table.
+SELECT email, COUNT(*) AS count
+FROM Users
+GROUP BY email
+HAVING COUNT(*) > 1;
+
+ Get the department with the highest average salary.
+ 
+SELECT TOP 1 departmentId, AVG(salary) AS avg_salary
+FROM Employee
+GROUP BY departmentId
+ORDER BY avg_salary DESC;
+
+6. List the top 3 highest spending customers.
+SELECT TOP 3 customerId, SUM(amount) AS total_spent
+FROM Orders
+GROUP BY customerId
+ORDER BY total_spent DESC;
+
+List customers who never placed an order.
+SELECT c.customerId
+FROM Customer c
+LEFT JOIN Orders o ON c.customerId = o.customerId
+WHERE o.orderId IS NULL;
+
+Get the total number of orders and total revenue.
+SELECT 
+    COUNT(orderId) AS total_orders,
+    SUM(amount) AS total_revenue
+FROM Orders;
+
+Find customers who placed more than 3 orders.
+
+SELECT customerId, COUNT(*) AS order_count
+FROM Orders
+GROUP BY customerId
+HAVING COUNT(*) > 3;
+
+difference between @Resource, @Inject, and @Autowired?
+
+The annotations @Resource, @Inject, and @Autowired are used for dependency injection in Java applications, 
+particularly within the Spring Framework, but they originate from different specifications 
+and have distinct primary lookup mechanisms.
+
+1.@Autowired:
+This is a Spring-specific annotation.
+It primarily performs dependency injection by type. Spring will search for a bean of the same type as the annotated field, constructor, or method parameter.
+If multiple beans of the same type exist, it can be combined with @Qualifier to specify a particular bean by name, or a @Primary bean can be designated.
+It has a required attribute, defaulting to true, which determines if the dependency is mandatory.
+
+2.@Resource:
+This annotation is part of the Java EE (now Jakarta EE) standard (JSR-250), defined in javax.annotation.Resource (or jakarta.annotation.Resource in newer versions).
+It primarily performs dependency injection by name. It first attempts to find a bean matching the name of the annotated field or the name specified in the name attribute of the annotation.
+If a bean is not found by name, it then attempts to find one by type.
+
+3.@Inject:
+This annotation is part of the Java Dependency Injection (JSR-330) standard, defined in javax.inject.Inject.
+Similar to @Autowired, it primarily performs dependency injection by type.
+It is framework-agnostic, meaning it can be used with various dependency injection frameworks that support JSR-330, including Spring.
+It does not have a required attribute; if a dependency cannot be resolved, an exception is thrown. It can be combined with @Named for disambiguation when multiple beans of the same type exist.
+
+@Inject
+@Named("mybean")
+
+2. @Qualifier vs @Named
+@Qualifier is typically used when there are multiple beans of the same type, and you want to specify exactly which one should be injected. 
+You define a custom qualifier to indicate which bean to inject.
+@Qualifier("specificService")
+public class MyServiceImpl implements MyService {
+    // Implementation
+}
+
+@Inject
+@Qualifier("specificService")
+private MyService myService;
+
+
+@Named is a more general-purpose annotation that is often used with CDI (Contexts and Dependency Injection) or frameworks like Spring. It acts similarly to @Qualifier in the sense that it specifies which bean to inject, 
+but it is usually less flexible than @Qualifier (since @Named typically uses the bean's name as the identifier).
+
+@Named("specificService")
+public class MyServiceImpl implements MyService {
+    // Implementation
+}
+
+@Inject
+@Named("specificService")
+private MyService myService;
+
+
+what will be the output of following code: 
+
+public static void main(String[] args) {
+    try {
+        System.out.println("A");
+        badMethod();
+        System.out.println("B");
+    } catch (Exception ex) {
+        System.out.println("C");
+    } finally {
+        System.out.println("D");
+    }
+}
+
+public static void badMethod() {
+    throw new Error();
+}
+
+output:
+A
+D
+
+
+what will be output : select age , max(salary) from employee
+1. Error because group by clause is not used
+Correct Query: select age , max(salary) from employee group by age
+This query will give max salary per age group
+
+If you want employee list who are getting paid highest among all employee 
+SELECT *
+FROM employee
+WHERE salary = (SELECT MAX(salary) FROM employee);
+
+Input : List<Integer> integers = Arrays.asList(1, 3, 2, 4, 3, 1, 2);
+Expected Output: [4, 3, 2, 1]
+
+public class Test {
+    public static void main(String[] args) {
+        List<Integer> integers = Arrays.asList(1, 3, 2, 4, 3, 1, 2);
+
+        List<Integer> output = integers.stream()
+                .distinct()                     // remove duplicates
+                .sorted(Comparator.reverseOrder()) // sort in descending order
+                .collect(Collectors.toList());
+
+        System.out.println(output); // [4, 3, 2, 1]
+    }
+}
+
+
+Default keyword in java? 
+int day = 4;
+switch(day) {
+    case 6:
+        System.out.println("Saturday");
+        break;
+    case 7:
+        System.out.println("Sunday");
+        break;
+    default:
+        System.out.println("Weekday");
+}
+
+In Interfaces (Java 8 and later)
+Enables default methods in interfaces that provide a default implementation.
+
+This lets you add new methods to interfaces without breaking existing classes that implement them.
+
+Classes implementing the interface can override these default methods if needed.
+
+Example:
+
+java
+interface MyInterface {
+    default void sayHello() {
+        System.out.println("Hello from default method!");
+    }
+}
+
+class MyClass implements MyInterface {
+    // Inherits sayHello; can override if desired
+}
+
+public class Demo {
+    public static void main(String[] args) {
+        MyClass obj = new MyClass();
+        obj.sayHello();  // prints: Hello from default method!
+    }
+}
+
+Create Custom Exception in java ?
+Force programmers to handle problems that are expected and recoverable.
+Example: File not found, network errors.
+Intention:
+Make sure you write code to deal with predictable issues.
+You must either catch the exception (with try-catch) or declare it in your method (throws Exception).
+This helps make code more robust and less likely to crash due to things you could have anticipated.
+Checked exceptions must be either caught or declared in the method signature using throws.
+public class InvalidAgeException extends Exception {
+    public InvalidAgeException(String message) {
+        super(message);
+    }
+}
+
+public class Main {
+    public static void validateAge(int age) throws InvalidAgeException {
+        if (age < 18) {
+            throw new InvalidAgeException("Age must be 18 or above.");
+        }
+        System.out.println("Valid age: " + age);
+    }
+
+    public static void main(String[] args) {
+        try {
+            validateAge(15);
+        } catch (InvalidAgeException e) {
+            System.out.println("Caught Exception: " + e.getMessage());
+        }
+    }
+}
+
+2. Create a Custom Unchecked Exception
+Signal programming mistakes or issues that are unexpected or unrecoverable.
+Example: Null pointer, array index out of bounds, invalid type cast.
+Intention:
+Allow the program to fail quickly for bugs or errors that usually mean there’s a mistake in the code.
+You are not forced to catch or declare these exceptions.
+Used for situations that are not reasonably recoverable (wrong logic, broken code).
+
+Unchecked exceptions extend RuntimeException. You are not required to declare or catch them explicitly.
+
+java
+// Custom unchecked exception by extending RuntimeException
+public class InvalidNameException extends RuntimeException {
+    public InvalidNameException(String message) {
+        super(message);
+    }
+}
+
+public class Main {
+    public static void validateName(String name) {
+        if (name == null || name.isEmpty()) {
+            throw new InvalidNameException("Name cannot be empty");
+        }
+        System.out.println("Valid name: " + name);
+    }
+
+    public static void main(String[] args) {
+        validateName("");
+    }
+}
+
+@RequestParam
+Extracts data from query parameters (the part after ? in the URL).
+
+Typically used for optional parameters, filters, sorting, pagination.
+
+Example URL: /users?country=India&active=true
+
+Method example:
+
+java
+@GetMapping("/users")
+public String getUsers(@RequestParam String country, @RequestParam boolean active) {
+    // country = "India", active = true
+}
+Can be marked as optional with required = false.
+
+@PathVariable
+Extracts data from URI path segments (part of the URL itself).
+
+Used for required parameters that identify a resource uniquely.
+
+Example URL: /users/123
+
+Method example:
+
+java
+@GetMapping("/users/{id}")
+public String getUserById(@PathVariable Long id) {
+    // id = 123
+}
+Usually required by default; missing path variable leads to 404.
+
+Difference between @JsonIgnore and @Transient
+
+@JsonIgnore
+Used In: Jackson (for JSON serialization/deserialization)
+
+Purpose: Tells Jackson to IGNORE a field when converting Java objects to/from JSON (e.g., REST APIs).
+
+Effect: The field will NOT appear in the JSON output or be read from JSON input.
+
+Example:
+
+@JsonIgnore
+private String password;
+password will NOT be included in API responses.
+
+@Transient
+Used In: JPA/Hibernate (for database mapping)
+
+Purpose: Tells JPA to IGNORE a field when mapping Java objects to database tables.
+
+Effect: The field will NOT be saved in the database or mapped to any column.
+
+Example:
+
+@Transient
+private int calculationResult;
+calculationResult is used only in code, not stored in the database.
+
+Authentication vs Authorization ?
+
+Authentication is the process of verifying the identity of a user, application, or system. In simple terms, it answers the question:
+“Who are you?”
+The primary goal of authentication is to ensure that users are who they claim to be. 
+Common methods include passwords, biometrics, multi-factor authentication (MFA), security tokens, and certificates.
+Examples:
+Entering a username and password to log in.
+Scanning a fingerprint to unlock a phone.
+Using an OAuth provider (Google, Facebook) to sign in.
+
+Authorization is the process of determining what an authenticated user or system is allowed to do. It answers the question:
+“What are you allowed to do?”
+Allowing a logged-in user to access their own files but not other users’ files.
+Restricting admin-only features to users with the "admin" role.
+Limiting access to APIs based on user permissions.
+Authorization mechanisms often involve access control lists (ACLs), roles, and permissions, ensuring that users cannot perform actions or access data beyond their privileges.
+
+Why Does This Matter?
+Mixing up authentication and authorization can lead to serious security vulnerabilities:
+Giving resource access without verifying identity is unsafe.
+Authenticating but not authorizing exposes sensitive functionality.
+Best Practice: Always authenticate first, then authorize explicitly based on least privilege—give users the minimum access needed to perform their tasks.
+
+Unique key vs Composite key?
+A unique key is a database constraint that ensures all values in a column (or group of columns) are distinct across rows in a table.
+Purpose: Prevents duplicate values; enforces uniqueness.
+Scope: Can be a single column or multiple columns.
+Nullability: Can contain a single NULL value
+Example: In a users table, the email column can be set as a unique key to ensure no two users share the same email.
+
+CREATE TABLE users (
+    id INT PRIMARY KEY,
+    email VARCHAR(255) UNIQUE
+);
+
+Composite Key
+A composite key is a type of key (typically a primary key or unique key) that uses a combination of two or more columns to uniquely identify a row.
+Purpose: Uniquely identifies records using multiple columns when no single column is sufficient.
+Scope: Always involves two or more columns.
+Example: In an enrollments table, the combination of student_id and course_id together uniquely identifies enrollment records.
+
+@Mock vs @InjectMocks in Unit Testing ?
+
+Both @Mock and @InjectMocks are annotations primarily used in unit testing frameworks like Mockito to manage dependencies 
+for objects under test. 
+
+@Mock
+Purpose: Creates and manages a mock instance of a class or interface.
+Use Case: Use when you want to directly mock dependencies and control their behavior in a test.
+@Mock
+private UserService userService;
+
+You use it to stub and verify method calls.
+
+@InjectMocks
+Purpose: Automatically injects mock or real dependencies into the class under test.
+Use Case: Use when you want to test your actual class, with its dependencies already replaced by mocks.
+
+@Mock will replace dependencies other than class under test and @InjectMocks mocks the actual class for which you are writing test cases.
+@InjectMocks
+private OrderService orderService;
+
+what verify() method does in Mockito ?
+verify() checks whether a certain method was invoked on a mocked object, with the correct arguments, and sometimes a specific number of times.
+Example: 
+verify(userService).notifyOrderPlaced(anyString());
+verify(userService, times(2)).notifyOrderPlaced("user123");
+
+
+What are the projects worked upon ?
+
+
+
+
+Difference Between vertical and horizontal scalability ? 
+
+Vertical Scalability (Scaling up): 
+1. Increases the power (CPU, RAM, storage) of a single machine or node to handle high workload.
+2. Vertical Scalability means Upgrade the existing server’s hardware resources 
+3. Lower initial costs compared to horizontal scaling
+4. Limited by maximum hardware capabilities
+5. Creates a single point of failure: if the main server goes down, so does the application.
+6. Typically offers less resilience and fault tolerance.
+Vertical scaling: Good for databases with predictable, increasing demand and applications where ease of scaling is important.
+
+
+Horizontal Scalability (Scaling Out):
+1. Adds more machines or nodes (servers) to distribute the high workload.
+2. Introduce new instances or servers to handle growing demands, distributing tasks across multiple systems.
+3. Enables handling large, variable, and unpredictable workloads.
+4. Provides greater fault tolerance—if one node fails, others can keep running.
+5. No hard upper limit to scaling: add more nodes as needed
+6. Preferred for cloud-native, web-scale, and distributed architectures.
+7. More complex to set up and manage; requires software architecture for distribution (like load balancers, distributed databases)
+8. Higher initial costs and more time-consuming to setup than vertical scaling.
+Horizontal scaling: Required for large-scale web apps, services needing high availability, and big data workloads.
+
+Java 8 vs Java 17 Feature
+
+1. var for Local variables
+
+//JAVA 8
+public void list(){
+	List<String> list = new ArrayList<>();
+	
+}
+
+// Java 17
+public void list(){
+var list= new ArrayList();
+
+}
+
+Java 8 : 
+
+public class Person {
+    private final String name;
+    private final int age;
+    public Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+    public String getName() { return name; }
+    public int getAge() { return age; }
+}
+
+Java 17 :
+In Java 17, a record is a special kind of class designed to act as a transparent carrier for immutable data. It provides a concise way to declare classes whose primary purpose is to store a fixed set of values, significantly reducing the boilerplate code traditionally required for such classes.
+Record instances are inherently immutable. All components (fields) of a record are implicitly private final, meaning their values cannot be changed after creation.
+Records eliminate the need to manually write boilerplate code for:
+Private final fields for each component.
+A public, all-arguments canonical constructor.
+Public accessor methods (getters) for each component, named after the component (e.g., person.name()).
+Implementations of equals(), hashCode(), and toString() methods, which are automatically generated based on the record's components.
+Records are ideal for modeling data transfer objects (DTOs), API responses, or any situation where you need a simple, immutable container for a fixed set of values.
+
+
+public record Person(String name, int age , String city) {
+}
+
+
+3. Pattern Matching for instanceof
+
+//java 8
+if (obj instanceof String) {
+    String s = (String) obj;
+    System.out.println(s.toUpperCase());
+}
+
+//java 17
+
+if (obj instanceof String s) {
+    System.out.println(s.toUpperCase());
+}
+
+//JAVA 8
+
+String result;
+switch (status) {
+    
+	case "START":
+    result = "begin"; 
+	break;
+    
+	case "STOP": 
+	result = "end"; 
+		break;
+    
+	default: 
+	result = "unknown";
+}
+
+//JAVA 17
+String result = switch (status) {
+    case "START" -> "begin";
+    case "STOP" -> "end";
+    default -> "unknown";
+};
+
+5. Text Blocks (Multi-line Strings)
+//Java 8:
+
+String sql = "SELECT * FROM users WHERE id = 1\n"
+           + "AND status = 'active'";
+		   
+//JAVA 17:
+String sql = """
+    SELECT * FROM users WHERE id = 1
+    AND status = 'active'
+    """;
+	
+6. Sealed Classes
+
+//JAVA 8
+// No way to restrict who can extend this class
+public class Shape {}
+public class Circle extends Shape {}
+public class Square extends Shape {}
+
+//JAVA 17
+public sealed class Shape permits Circle, Square {}
+public final class Circle extends Shape {}
+public final class Square extends Shape {}
+
+Benefit: Restricts inheritance, improves maintainability and safety.
+
+. Modern HttpClient API
+//Java 8:
+HttpURLConnection con = (HttpURLConnection) url.openConnection();
+// configuration, then read InputStream ...
+
+Java 17:
+
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest request = HttpRequest.newBuilder()
+    .uri(URI.create("https://example.com"))
+    .build();
+HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+What is Saga Design pattern? 
+-> The Saga pattern in microservices is a design pattern for managing distributed transactions and ensuring data consistency across 
+multiple independent services without relying on traditional ACID transactions or two-phase commit protocols.
+
+A saga consists of a sequence of local transactions performed by different microservices. 
+Each local transaction updates its service's data and triggers the next transaction in the sequence using messages or events.
+If any transaction fails,compensating actions are executed to roll back the effects of previous steps, thereby maintaining overall
+consistency
+
+Each step in a saga corresponds to a microservice performing a unit of work independently.
+If a step is successful, the next service proceeds; if not, compensating (undo) logic is invoked for already completed steps.
+
+Coordination can be done either through choreography (services listen to each other through events) 
+or orchestration (a central coordinator manages the workflow).
+
+Local transactions: Each microservice executes its work in isolation and commits to its own database.
+
+Compensating transactions: Logic to undo the effects of completed steps if a failure occurs.
+
+Event/message passing: Services communicate progress and failures using asynchronous events or messages.
+
+The Saga pattern is best for workflows that span multiple services and require eventual consistency, such as order processing or travel booking, 
+where every stage must succeed or all effects must be undone.
+
+
+
+Factor used to Decomponse a single monolithic application among several microservices ?
+-> 
+A single monolithic application is generally divided into several microservices using strategies
+focused on business capabilities, domain logic, and component boundaries. 
+The primary factors or ways used include business domain decomposition, entity-based decomposition, 
+and aligning with organizational needs.
+
+Business Capability Mapping: Each microservice is mapped to a distinct business capability 
+(e.g., billing, user management, product delivery), keeping focus and autonomy for each team.
+
+Domain-Driven Design (DDD): Breaking the application along bounded contexts—business domains or subdomains—to ensure 
+services have high cohesion and low coupling.
+
+Entity-Based Decomposition: Creating services around main data entities, like users, orders, or products, 
+where each handles operations related to a single entity.
+
+Component-Based Decomposition: Splitting by technical components or modules if they have strong boundaries and
+ minimal dependencies with others.
+
+
+Strangler Fig Pattern: Replace the monolithic system incrementally by introducing 
+new microservices alongside the old monolith, gradually transferring features service by service.
+Business Process/Transaction Decomposition: Decompose by identifying transactions or 
+business processes that can function independently, minimizing cross-service communication.
+Team/Ownership Alignment: Map microservices boundaries to the responsibility of different teams, 
+enabling independent deployment and scaling.
+Frequency of Change and Complexity: Prioritize critical components that change frequently or are most complex
+ to be converted first into microservices, maximizing the benefit and reducing migration risk.
+ 
+Best Practices
+Always maintain high cohesion and low coupling between services to promote modularity and easy maintenance.
+Define clear APIs and contracts for inter-service communication.
+Start small and iterate—first splitting off simple, decoupled capabilities or domains and expanding from there.
+
+Difference between Cohension and coupling ?
+-> Cohesion measures how closely related the elements within a single module are—how well they work together 
+to achieve a single, well-defined purpose.
+High cohesion is desirable because it means the module is focused on a single responsibility, 
+making it easier to maintain, understand, and reuse
+Example: A module responsible solely for user authentication (handling login, logout, and password management) is highly cohesive.
+
+-> Coupling is the degree of interdependence between different modules; it measures how much one module relies on another.
+Low coupling is most desirable, as it means modules are independent, allowing changes in one module without affecting others,
+resulting in a more flexible, maintainable system.
+Example: If a user authentication module works independently of the user profile module, their coupling is low.
+
+Cohesion is about keeping the internals of a module focused and related, while coupling measures how much modules depend on each 
+other—the ideal is to have high cohesion and low coupling for a robust software architecture.
+
+Why character array is used in passwords instead of storing them in heap for java applications?
+A character array (char[]) is preferred over storing passwords as String (which reside in the heap) in Java applications 
+because of critical security reasons.
+
+Strings Are Immutable
+Strings are immutable, meaning once created, their contents can't be changed.
+If a password is stored as a String, it remains in memory until garbage collection runs,
+ making it possible for attackers to retrieve it from memory dumps.
+
+Controlled Erasure :
+char[] arrays are mutable, so developers can explicitly overwrite and erase password data when it's no longer needed, 
+reducing the window for unauthorized access.With a String, there is no way to change or clean up the memory—the password may linger for longer periods 
+due to string pooling and garbage collection behavior.
+
+Strings are easier to accidentally print to logs or expose inadvertently,
+ while char[] is less prone because its raw representation (an object reference) is less readable and harder to leak by accident.
+
+Heap and String Pool
+Both char[] and String objects are technically stored in heap memory in Java, but Strings also reside in the string pool, which increases the risk of lingering sensitive information since the same immutable String might be reused elsewhere in the program.
+
+
+String is created in heap or string constant pool?
+
+String literals are placed in the String Constant Pool to optimize memory,
+allowing Java to reuse references for identical literal values.
+The String Constant Pool is part of the heap from Java 7 onward (including Java 8); 
+it is no longer in the PermGen space as in earlier Java versions.
+When a literal is encountered, the JVM checks the pool; if it already exists, a reference is reused, otherwise a new object is created in the pool.
+
+Strings Created with new
+If a String is created with the new keyword (e.g., new String("hello")), it is always allocated as a new object in the regular heap,
+outside the String Pool.
+However, the literal part ("hello") is still present in the pool, but the explicit instance is separate and not shared.
+
+
